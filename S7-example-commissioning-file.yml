@@ -1,0 +1,55 @@
+description: >
+  S7 Example
+
+metadata:
+  name: S7 Device
+
+resources:
+# ----------------------------------------------------------------------------#
+# Connection Resource - S7 Protocol
+# ----------------------------------------------------------------------------#
+  s7Connection:
+    type: Cybus::Connection
+    properties:
+      protocol: S7
+      connection:
+        host: 192.168.10.60
+        port: 102
+        rack: 0
+        slot: 1
+        pollInterval: 1000
+
+# ----------------------------------------------------------------------------#
+# Endpoint Resource - S7 Protocol
+# ----------------------------------------------------------------------------#
+  s7EndpointDB1000:
+    type: Cybus::Endpoint
+    properties:
+      protocol: S7
+      connection: !ref s7Connection
+      subscribe:
+        address: DB10,X0.0
+
+  s7EndpointDB1000Write:
+    type: Cybus::Endpoint
+    properties:
+      protocol: S7
+      connection: !ref s7Connection
+      write:
+        address: DB10,X0.0
+
+# ----------------------------------------------------------------------------#
+# Mapping Resource - S7 Protocol
+# ----------------------------------------------------------------------------#
+  mapping:
+    type: Cybus::Mapping
+    properties:
+      mappings:
+        - subscribe:
+            endpoint: !ref s7EndpointDB1000
+          publish:
+            topic: !sub '${Cybus::MqttRoot}/DB1000'
+        - subscribe:
+            topic: !sub '${Cybus::MqttRoot}/DB1000/set'
+          publish:
+            endpoint: !ref s7EndpointDB1000Write
